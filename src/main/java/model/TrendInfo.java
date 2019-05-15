@@ -1,0 +1,71 @@
+package model;
+
+import exceptions.PersistenceException;
+import lombok.Data;
+
+import java.time.LocalDateTime;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+@Data
+public class TrendInfo implements CSVable {
+    private String search;
+    private SortedMap<LocalDateTime, String> values;
+
+    @Override
+    public String toString() {
+        return "TrendInfo{" +
+                "search='" + search + '\'' +
+                ", values=" + values +
+                '}';
+    }
+
+    @Override
+    public String[] toCsv() {
+        int propertiesNum = 1 + values.size();
+        String[] copiedValues = new String[propertiesNum];
+        copiedValues[0] = search;
+        int valueIndex = 1;
+        for (Map.Entry<LocalDateTime, String> localDateTimeStringEntry : values.entrySet()) {
+            String copiedVal = localDateTimeStringEntry.getKey().toString() + '=' + localDateTimeStringEntry.getValue();
+            copiedValues[valueIndex] = copiedVal;
+            valueIndex++;
+        }
+        return copiedValues;
+    }
+
+    @Override
+    public void fillFromCsv(String... params) {
+        setSearch(params[0]);
+
+        final int paramsSize = params.length;
+        SortedMap<LocalDateTime, String> copiedMap = new TreeMap<>();
+        for (int i = 1; i < paramsSize; i++) {
+            String[] paramsParts = params[i].split("=");
+            if (paramsParts.length != 2) {
+                throw new PersistenceException("Got a parameter that is not represented as date=val, " +
+                        "so cannot fill an object");
+            }
+            LocalDateTime date = LocalDateTime.parse(paramsParts[0]);
+            String value = paramsParts[1];
+            copiedMap.put(date, value);
+        }
+
+        setValues(copiedMap);
+    }
+
+    @Override
+    public String[] getCsvHeader() {
+        final int valuesSize = values.size();
+        String[] csvHeader = new String[valuesSize + 1];
+        csvHeader[0] = "SEARCH_QUERY";
+
+        for (int i = 1; i <= valuesSize; i++) {
+            String headerColumn = "DATE" + i + "=VALUE" + i;
+            csvHeader[i] = headerColumn;
+        }
+
+        return csvHeader;
+    }
+}
