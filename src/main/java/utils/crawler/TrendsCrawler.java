@@ -11,7 +11,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import utils.Configuration;
+import utils.Config;
 import utils.crawler.trends.arguments.Region;
 import utils.crawler.trends.arguments.TimeRange;
 
@@ -24,8 +24,8 @@ import java.util.*;
 
 @Log4j2
 public class TrendsCrawler {
-    private static final String GTRENDS_LINK = Configuration.getValue("crawler.g-trends.link");
-    private static final String BASE = GTRENDS_LINK + Configuration.getValue("crawler.g-trends.link.explore");
+    private static final String GTRENDS_LINK = Config.getValue("crawler.g-trends.link");
+    private static final String BASE = GTRENDS_LINK + Config.getValue("crawler.g-trends.link.explore");
     private static final DateTimeFormatter formatter1Day = get1DayFormatter();
     private Map<String, String> keyToArg;
     private String searchString;

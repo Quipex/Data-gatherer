@@ -1,5 +1,6 @@
 package controller;
 
+import notification.EmailCenter;
 import utils.ThreadUtils;
 
 import java.time.LocalTime;
@@ -17,9 +18,14 @@ abstract class AbstractScheduledController implements Runnable {
     public final void run() {
         ThreadUtils.waitUntil(startTime);
 
-        while (!Thread.interrupted()) {
-            cycle();
-            ThreadUtils.sleep(cycleInterval);
+        try {
+            while (!Thread.interrupted()) {
+                cycle();
+                ThreadUtils.sleep(cycleInterval);
+            }
+        } catch (Exception e) {
+            EmailCenter.sendError(e.getMessage());
+            throw e;
         }
     }
 

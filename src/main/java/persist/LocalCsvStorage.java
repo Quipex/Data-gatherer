@@ -4,14 +4,18 @@ import exceptions.PersistenceException;
 import lombok.extern.log4j.Log4j2;
 import model.CSVable;
 import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +27,7 @@ public class LocalCsvStorage {
     private LocalCsvStorage() {}
 
     public LocalCsvStorage(Path filePath) {
+        this();
         this.filePath = filePath;
     }
 
@@ -46,7 +51,7 @@ public class LocalCsvStorage {
             throw new PersistenceException(e);
         }
 
-        try (BufferedWriter writer = Files.newBufferedWriter(filePath, StandardOpenOption.APPEND)) {
+        try (Writer writer = Files.newBufferedWriter(filePath, StandardOpenOption.APPEND, StandardOpenOption.CREATE)) {
             CSVFormat format = CSVFormat.DEFAULT.withDelimiter(CSV_DELIMITER);
             if (needHeader) {
                 format = format.withHeader(csvableList.get(0).getCsvHeader());
@@ -80,6 +85,25 @@ public class LocalCsvStorage {
         return lines;
     }
 
+    public List<CSVable> read(LocalDateTime from, LocalDateTime to) {
+        try (Reader reader = Files.newBufferedReader(filePath)) {
+            final CSVFormat csvFormat = CSVFormat.DEFAULT
+                    .withDelimiter(';');
+            CSVParser parser = new CSVParser(reader, csvFormat);
+            for (CSVRecord record : parser) {
+                System.out.println(record.getRecordNumber());
+                for (String col : record) {
+                    System.out.println(col);
+                }
+                System.out.println("-------------");
+            }
+        } catch (IOException e) {
+            throw new PersistenceException(e);
+        }
+
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Clears the file writing 0 bytes
      */
@@ -91,4 +115,5 @@ public class LocalCsvStorage {
             throw new PersistenceException(e);
         }
     }
+
 }

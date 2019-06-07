@@ -6,7 +6,7 @@ import org.jsoup.Connection;
 import org.jsoup.HttpStatusException;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import utils.Configuration;
+import utils.Config;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -16,8 +16,8 @@ import java.util.Objects;
 @Log4j2
 abstract class AbstractHtmlCrawler {
 
-    private static final String USER_AGENT = Configuration.getValue("crawler.user_agent");
-    private static final String LATEST_HTML_FILENAME = Configuration.getValue("file.latest_parsed_html");
+    private static final String USER_AGENT = Config.getValue("crawler.user_agent");
+    private static final String LATEST_HTML_FILENAME = Config.getValue("file.latest_parsed_html");
     private static final String LATEST_HTML_PATH = Objects.requireNonNull(AbstractHtmlCrawler.class.getClassLoader()
             .getResource(LATEST_HTML_FILENAME)).getPath();
 

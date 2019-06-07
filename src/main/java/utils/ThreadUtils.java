@@ -2,13 +2,16 @@ package utils;
 
 import lombok.extern.log4j.Log4j2;
 
-import java.time.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 
 @Log4j2
 public final class ThreadUtils {
     private static final int FIFTEEN_SECS = 15 * 1000;
-    private static final String ZONE_ID = Configuration.getValue("time.zone_id");
+    private static final String ZONE_ID = Config.getValue("time.zone_id");
 
     /**
      * @param desiredTime thread sleeps until next datetime with the same hours and minutes

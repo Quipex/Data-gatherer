@@ -4,7 +4,7 @@ import exceptions.CrawlerException;
 import lombok.extern.log4j.Log4j2;
 import model.ApplicationInfo;
 import persist.LocalCsvStorage;
-import utils.Configuration;
+import utils.Config;
 import utils.ThreadUtils;
 import utils.crawler.PlayMarketCrawler;
 
@@ -19,7 +19,7 @@ public class PlayMarketController extends AbstractScheduledController {
     private static final int HOUR = 60 * 60 * 1000;
     private static final int DAY = 24 * HOUR;
     private static final int SECOND = 1000;
-    private static final String PLAY_MARKET_CSV = Configuration.getValue("file.buffer_play_market");
+    private static final String PLAY_MARKET_CSV = Config.getValue("file.buffer_play_market");
     private List<String> urls;
     private LocalCsvStorage localStorage;
 

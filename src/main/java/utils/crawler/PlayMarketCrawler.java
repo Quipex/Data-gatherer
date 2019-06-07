@@ -8,13 +8,15 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Log4j2
 public class PlayMarketCrawler extends AbstractHtmlCrawler {
+
+    private PlayMarketCrawler() {}
 
     public static ApplicationInfo crawlFromUrl(String url) {
         Document doc = loadFromUrl(url);
@@ -49,7 +51,7 @@ public class PlayMarketCrawler extends AbstractHtmlCrawler {
         appInfo.setTwoStars(reviewsByStars[3]);
         appInfo.setOneStars(reviewsByStars[4]);
 
-        appInfo.setTimestamp(ZonedDateTime.now());
+        appInfo.setTimestamp(LocalDateTime.now());
         return appInfo;
     }
 

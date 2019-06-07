@@ -3,9 +3,10 @@ package controller;
 import lombok.extern.log4j.Log4j2;
 import model.TrendInfo;
 import persist.LocalCsvStorage;
-import utils.Configuration;
+import utils.Config;
 import utils.ThreadUtils;
 import utils.crawler.TrendsCrawler;
+import utils.crawler.trends.arguments.Region;
 
 import java.nio.file.Paths;
 import java.time.LocalTime;
@@ -17,7 +18,7 @@ public class TrendsController extends AbstractScheduledController {
     private static final int SECOND = 1000;
     private static final int HOUR = 60 * 60 * SECOND;
     private static final int DAY = 24 * HOUR;
-    private static final String TRENDS_CSV = Configuration.getValue("file.buffer_google_trends");
+    private static final String TRENDS_CSV = Config.getValue("file.buffer_google_trends");
     private List<String> searchStrings;
     private LocalCsvStorage localStorage;
     private TrendsCrawler crawler;
@@ -30,7 +31,9 @@ public class TrendsController extends AbstractScheduledController {
         super(startTime, DAY);
         this.localStorage = new LocalCsvStorage(Paths.get(TRENDS_CSV));
         this.searchStrings = searchStrings;
-        this.crawler = new TrendsCrawler.Builder().build();
+        this.crawler = new TrendsCrawler.Builder()
+                .setRegion(Region.ALL)
+                .build();
     }
 
     @Override
