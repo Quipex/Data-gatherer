@@ -1,9 +1,11 @@
 import controller.PlayMarketController;
 import controller.TrendsController;
+import lombok.extern.log4j.Log4j2;
 
 import java.time.LocalTime;
 import java.util.Arrays;
 
+@Log4j2
 public class Main {
     private static String[] SEARCH_STRINGS = new String[]{
             "vpn",
@@ -33,9 +35,6 @@ public class Main {
 
         PlayMarketController playMarketController = new PlayMarketController(LocalTime.of(20, 1),
                 Arrays.asList(PLAY_MARKET_APPS));
-        new Thread(playMarketController, "PlayMarket").start();
-
-        while (true) {
-        }
+        playMarketController.run();
     }
 }
