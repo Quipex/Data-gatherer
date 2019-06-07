@@ -1,12 +1,24 @@
 package model;
 
 import exceptions.PersistenceException;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import utils.Config;
 
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Data
 public class ApplicationInfo implements CSVable {
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
+    private static DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(
+            Config.getValue("time.datetime_format")
+    );
+
     //    app name
     private String name;
     //    number of downloads
@@ -26,7 +38,7 @@ public class ApplicationInfo implements CSVable {
     //    number of 1* reviews
     private long oneStars;
     //    date when application info was taken
-    private ZonedDateTime timestamp;
+    private LocalDateTime timestamp;
 
     public void setName(String name) {
         name = name.replace("&amp;", "&");
@@ -44,7 +56,7 @@ public class ApplicationInfo implements CSVable {
     @Override
     public String[] toCsv() {
         return new String[]{
-                String.valueOf(timestamp),
+                timestamp.format(dateTimeFormatter),
                 getName(),
                 String.valueOf(downloads),
                 String.valueOf(rating),
@@ -62,7 +74,7 @@ public class ApplicationInfo implements CSVable {
         if (params.length != 10) {
             throw new PersistenceException("Parameters number is not 10. Can not fill the object.");
         }
-        setTimestamp(ZonedDateTime.parse(params[0]));
+        setTimestamp(LocalDateTime.parse(params[0], dateTimeFormatter));
         setName(params[1]);
         setDownloads(Long.parseLong(params[2]));
         setRating(Double.parseDouble(params[3]));

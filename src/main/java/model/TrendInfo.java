@@ -2,8 +2,10 @@ package model;
 
 import exceptions.PersistenceException;
 import lombok.Data;
+import utils.Config;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -12,6 +14,9 @@ import java.util.TreeMap;
 public class TrendInfo implements CSVable {
     private String search;
     private SortedMap<LocalDateTime, String> values;
+    private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(
+            Config.getValue("time.datetime_format")
+    );
 
     @Override
     public String toString() {
@@ -26,11 +31,11 @@ public class TrendInfo implements CSVable {
         int propertiesNum = 1 + values.size();
         String[] copiedValues = new String[propertiesNum];
         copiedValues[0] = search;
-        int valueIndex = 1;
-        for (Map.Entry<LocalDateTime, String> localDateTimeStringEntry : values.entrySet()) {
-            String copiedVal = localDateTimeStringEntry.getKey().toString() + '=' + localDateTimeStringEntry.getValue();
-            copiedValues[valueIndex] = copiedVal;
-            valueIndex++;
+        int propertyIndex = 1;
+        for (Map.Entry<LocalDateTime, String> timestampToVal : values.entrySet()) {
+            String copiedVal = timestampToVal.getKey().format(dateTimeFormatter) + '=' + timestampToVal.getValue();
+            copiedValues[propertyIndex] = copiedVal;
+            propertyIndex++;
         }
         return copiedValues;
     }
@@ -47,11 +52,10 @@ public class TrendInfo implements CSVable {
                 throw new PersistenceException("Got a parameter that is not represented as date=val, " +
                         "so cannot fill an object");
             }
-            LocalDateTime date = LocalDateTime.parse(paramsParts[0]);
+            LocalDateTime date = LocalDateTime.parse(paramsParts[0], dateTimeFormatter);
             String value = paramsParts[1];
             copiedMap.put(date, value);
         }
-
         setValues(copiedMap);
     }
 

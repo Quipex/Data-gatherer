@@ -5,15 +5,14 @@ import java.time.LocalTime;
 import java.util.Arrays;
 
 public class Main {
-    private static String[] SEARCH_STRINGS = new String[] {
+    private static String[] SEARCH_STRINGS = new String[]{
             "vpn",
-            "free vpn",
-            "download vpn"
+            "android vpn",
+            "mobile vpn",
     };
 
-    private static String[] PLAY_MARKET_APPS = new String[] {
+    private static String[] PLAY_MARKET_APPS = new String[]{
             "https://play.google.com/store/apps/details?id=com.free.unblock.proxy.secure.vpn",
-//            "https://play.google.com/store/apps/details?id=com.xh.green",
             "https://play.google.com/store/apps/details?id=wild.vpn.network",
             "https://play.google.com/store/apps/details?id=com.xiaoming.vpn",
             "https://play.google.com/store/apps/details?id=com.fast.free.unblock.secure.vpn",
@@ -28,11 +27,11 @@ public class Main {
     };
 
     public static void main(String[] args) {
-        TrendsController trendsController = new TrendsController(LocalTime.now().plusSeconds(10),
+        TrendsController trendsController = new TrendsController(LocalTime.of(20, 0),
                 Arrays.asList(SEARCH_STRINGS));
         new Thread(trendsController, "Trends").start();
 
-        PlayMarketController playMarketController = new PlayMarketController(LocalTime.now().plusSeconds(10),
+        PlayMarketController playMarketController = new PlayMarketController(LocalTime.of(20, 1),
                 Arrays.asList(PLAY_MARKET_APPS));
         new Thread(playMarketController, "PlayMarket").start();
     }
