@@ -34,5 +34,8 @@ public class Main {
         PlayMarketController playMarketController = new PlayMarketController(LocalTime.of(20, 1),
                 Arrays.asList(PLAY_MARKET_APPS));
         new Thread(playMarketController, "PlayMarket").start();
+
+        while (true) {
+        }
     }
 }
