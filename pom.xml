@@ -25,7 +25,7 @@
                     <programs>
                         <program>
                             <mainClass>Main</mainClass>
-                            <name>PlayMarketDataGatherer</name>
+                            <name>quipex-data-gatherer</name>
                         </program>
                     </programs>
                 </configuration>
