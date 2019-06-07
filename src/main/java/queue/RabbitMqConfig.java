@@ -4,7 +4,7 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import exceptions.ApplicationException;
 import lombok.extern.log4j.Log4j2;
-import utils.Configuration;
+import utils.Config;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -13,8 +13,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.TimeoutException;
 
 @Log4j2
-final class RabbitMQConnection {
-    private static final String CONNECTION_NAME = Configuration.getValue("queue.connection.name");
+final class RabbitMqConfig {
+    private static final String CONNECTION_NAME = Config.getValue("queue.connection.name");
     private static Connection connection;
 
     public static Connection getConnection() throws ApplicationException {
@@ -40,7 +40,7 @@ final class RabbitMQConnection {
 
     private static ConnectionFactory createFactory() throws ApplicationException {
         ConnectionFactory factory = new ConnectionFactory();
-        final String uri = Configuration.getValue("queue.uri");
+        final String uri = Config.getValue("queue.uri");
         try {
             factory.setUri(uri);
         } catch (URISyntaxException | NoSuchAlgorithmException | KeyManagementException e) {

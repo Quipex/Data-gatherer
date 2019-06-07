@@ -8,7 +8,7 @@ import org.apache.commons.configuration2.ex.ConfigurationException;
 import java.io.File;
 
 @Log4j2
-public final class Configuration {
+public final class Config {
     private static final String PROPERTIES_PATH = "/app.properties";
     private static final Configurations configs = new Configurations();
     private static PropertiesConfiguration config;
@@ -23,9 +23,9 @@ public final class Configuration {
 
     private static void initialize() throws ConfigurationException {
         log.debug("Loading configuration " + PROPERTIES_PATH);
-        final String path = Configuration.class.getClassLoader().getResource("app.properties").getPath();
+        final String path = Config.class.getClassLoader().getResource("app.properties").getPath();
         config = configs.properties(new File(path));
-        log.debug("Configuration " + PROPERTIES_PATH + " has been loaded.");
+        log.debug("Config " + PROPERTIES_PATH + " has been loaded.");
         log.debug("Keys:");
         config.getKeys().forEachRemaining(log::debug);
     }
