@@ -18,12 +18,14 @@ public final class ThreadUtils {
      */
     public static void waitUntil(LocalTime desiredTime) {
         LocalDateTime currentTime = LocalDateTime.now(ZoneId.of(ZONE_ID));
-        long timeToWait = millisToWait(desiredTime, currentTime);
-        log.info("Waiting " + timeToWait + "ms to start");
-        sleep(timeToWait);
+        long millisToWait = getMillisBetween(desiredTime, currentTime);
+        long minsToWait = millisToWait / 1000 / 60;
+        log.info("Waiting " + millisToWait + "ms (" + minsToWait + " mins) to start. " +
+                "Starting at " + LocalDateTime.now().plus(millisToWait, ChronoUnit.MILLIS));
+        sleep(millisToWait);
     }
 
-    private static long millisToWait(LocalTime desiredTime, LocalDateTime currentDateTime) {
+    private static long getMillisBetween(LocalTime desiredTime, LocalDateTime currentDateTime) {
         final LocalDate today = currentDateTime.toLocalDate();
         final LocalDate tomorrow = today.plusDays(1);
         if (desiredTime.getHour() > currentDateTime.getHour()) {
@@ -58,6 +60,7 @@ public final class ThreadUtils {
 
     /**
      * Same as Thread.sleep, but InterruptedException is handled
+     *
      * @param millis time for which thread goes halted
      */
     public static void sleep(long millis) {
