@@ -16,15 +16,22 @@ import java.util.regex.Pattern;
 @Log4j2
 public class PlayMarketCrawler extends AbstractHtmlCrawler {
 
-    private PlayMarketCrawler() {}
+    private PlayMarketCrawler() {
+    }
 
     public static ApplicationInfo crawlFromUrl(String url) {
         Document doc = loadFromUrl(url);
-        writeToFile(doc.html());
 
         Element body = doc.body();
+        ApplicationInfo appInfo;
 
-        ApplicationInfo appInfo = processAppInfo(body);
+        try {
+            appInfo = processAppInfo(body);
+        } catch (Exception e) {
+            log.error("An exception occurred while crawling from Play Market, saving html document...");
+            writeToFile(doc.html());
+            throw e;
+        }
         log.debug("Processed app info: " + appInfo);
         return appInfo;
     }
@@ -38,9 +45,6 @@ public class PlayMarketCrawler extends AbstractHtmlCrawler {
         final long downloads = parseDownloads(body);
         appInfo.setDownloads(downloads);
 
-        final double rating = parseRating(body);
-        appInfo.setRating(rating);
-
         final long reviews = parseReviews(body);
         appInfo.setReviews(reviews);
 
@@ -51,8 +55,23 @@ public class PlayMarketCrawler extends AbstractHtmlCrawler {
         appInfo.setTwoStars(reviewsByStars[3]);
         appInfo.setOneStars(reviewsByStars[4]);
 
+        double rating = calcRating(
+                appInfo.getReviews(),
+                appInfo.getFiveStars(),
+                appInfo.getFourStars(),
+                appInfo.getThreeStars(),
+                appInfo.getTwoStars(),
+                appInfo.getOneStars());
+        if (rating > 5)
+            throw new CrawlerException("Rating is higher than 5");
+        appInfo.setRating(rating);
+
         appInfo.setTimestamp(LocalDateTime.now());
         return appInfo;
+    }
+
+    private static double calcRating(long reviews, long fiveStars, long fourStars, long threeStars, long twoStars, long oneStars) {
+        return (fiveStars * 5.0 + fourStars * 4.0 + threeStars * 3.0 + twoStars * 2.0 + oneStars) / reviews;
     }
 
     private static long[] getReviewsByStars(Element body, long reviews) {
@@ -72,15 +91,18 @@ public class PlayMarketCrawler extends AbstractHtmlCrawler {
         String styleWithWidth = starNode.childNode(1).attr("style");
         Matcher m = Pattern.compile(regex).matcher(styleWithWidth);
         if (!m.matches()) {
-            throw new CrawlerException("Can't parse width: N% to get star percentage. Probably Play Market source code changed.");
+            throw new CrawlerException("Can't parse 'width: N%' to get star percentage. Probably Play Market source code changed.");
         }
         return Integer.parseInt(m.group(1));
     }
 
     private static long parseReviews(Element body) {
-        final String cssQueryReviews = "meta[itemprop=reviewCount]";
-        Elements elementsReview = body.select(cssQueryReviews);
-        String reviewCountAsString = elementsReview.attr("content");
+        final String cssQueryReviews = "span[aria-label$=ratings]";
+        Elements elementsWithReviews = body.select(cssQueryReviews);
+        if (elementsWithReviews.size() == 0) {
+            throw new CrawlerException("Play market html changed");
+        }
+        String reviewCountAsString = elementsWithReviews.get(0).text().replaceAll(",", "");
         return Long.parseLong(reviewCountAsString);
     }
 

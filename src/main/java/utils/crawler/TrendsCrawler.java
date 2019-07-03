@@ -105,11 +105,14 @@ public class TrendsCrawler {
         checkSearchString();
 
         webDriver = getWebDriver();
+        log.debug("Going to " + searchString);
         webDriver.get(searchString);
 
-        WebDriverWait wait = new WebDriverWait(webDriver,5);
+        log.debug("Searching for data...");
+        WebDriverWait wait = new WebDriverWait(webDriver, 5);
         String dataEntryXpath = "//div[@aria-label='A tabular representation of the data in the chart.']//table//tbody//tr";
         List<WebElement> dataEntry = wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(By.xpath(dataEntryXpath)));
+        log.debug("Data was found!");
 
         SortedMap<LocalDateTime, String> dateToSearch = new TreeMap<>();
         for (WebElement tr : dataEntry) {
