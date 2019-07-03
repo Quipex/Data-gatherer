@@ -23,8 +23,8 @@ abstract class AbstractScheduledController implements Runnable {
                 cycle();
                 ThreadUtils.sleep(cycleInterval);
             }
-        } catch (Exception e) {
-            EmailCenter.sendError(e.getMessage());
+        } catch (Throwable e) {
+            EmailCenter.sendException(e);
             throw e;
         }
     }
