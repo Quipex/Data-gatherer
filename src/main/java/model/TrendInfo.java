@@ -1,7 +1,10 @@
 package model;
 
 import exceptions.PersistenceException;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import utils.Config;
 
 import java.time.LocalDateTime;
@@ -12,11 +15,14 @@ import java.util.TreeMap;
 
 @Data
 public class TrendInfo implements CSVable {
-    private String search;
-    private SortedMap<LocalDateTime, String> values;
+    @Getter(AccessLevel.NONE)
+    @Setter(AccessLevel.NONE)
     private DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(
             Config.getValue("time.datetime_format")
     );
+
+    private String search;
+    private SortedMap<LocalDateTime, String> values;
 
     @Override
     public String toString() {

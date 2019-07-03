@@ -9,6 +9,7 @@ public interface CSVable {
 
     /**
      * Fill object's properties with arguments passed as list
+     *
      * @param params to be filled to the object
      */
     void fillFromCsv(String... params);
