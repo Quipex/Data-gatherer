@@ -1,5 +1,7 @@
 import controller.PlayMarketController;
+import controller.QueueController;
 import controller.TrendsController;
+import exceptions.ApplicationException;
 import lombok.extern.log4j.Log4j2;
 
 import java.time.LocalTime;
@@ -7,6 +9,7 @@ import java.util.Arrays;
 
 @Log4j2
 public class Main {
+
     private static String[] SEARCH_STRINGS = new String[]{
             "vpn",
             "android vpn",
@@ -28,13 +31,24 @@ public class Main {
             "https://play.google.com/store/apps/details?id=com.simplexsolutionsinc.vpn_unlimited"
     };
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ApplicationException {
+        log.debug("Main thread started");
+
+        new Thread(new QueueController(), "Queue").start();
+        log.debug("Started Queue thread");
+
         TrendsController trendsController = new TrendsController(LocalTime.of(20, 0),
+//        TrendsController trendsController = new TrendsController(LocalTime.now().plusSeconds(3),
                 Arrays.asList(SEARCH_STRINGS));
         new Thread(trendsController, "Trends").start();
+        log.debug("Started Trends thread");
 
-        PlayMarketController playMarketController = new PlayMarketController(LocalTime.of(20, 1),
+        PlayMarketController playMarketController = new PlayMarketController(LocalTime.of(20, 0),
+//        PlayMarketController playMarketController = new PlayMarketController(LocalTime.now().plusSeconds(3),
                 Arrays.asList(PLAY_MARKET_APPS));
-        playMarketController.run();
+        new Thread(playMarketController, "Market").start();
+        log.debug("Started Market thread");
+
+        log.debug("Main thread finished");
     }
 }
