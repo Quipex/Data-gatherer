@@ -1,5 +1,6 @@
 package notification;
 
+import lombok.extern.log4j.Log4j2;
 import org.simplejavamail.email.Email;
 import org.simplejavamail.email.EmailBuilder;
 import org.simplejavamail.mailer.Mailer;
@@ -7,6 +8,7 @@ import org.simplejavamail.mailer.MailerBuilder;
 import org.simplejavamail.mailer.config.TransportStrategy;
 import utils.Config;
 
+@Log4j2
 public class EmailCenter {
     private static String login = Config.getValue("email.login");
     private static String password = Config.getValue("email.password");
@@ -19,7 +21,7 @@ public class EmailCenter {
         return MailerBuilder
                 .withSMTPServer(server, 465, login, password)
                 .withTransportStrategy(TransportStrategy.SMTPS)
-                .withDebugLogging(true)
+                .withDebugLogging(false)
                 .buildMailer();
     }
 
@@ -29,7 +31,21 @@ public class EmailCenter {
 
     public static void sendError(String message, String subject) {
         Email email = createEmail(message, subject, MessageType.ERROR);
+        sendMessage(email);
+    }
+
+    private static void sendMessage(Email email) {
+        log.info("Sending email...");
         mailer.sendMail(email, true);
+    }
+
+    public static void sendException(Throwable e) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(e.getMessage()).append("\n\n");
+        for (StackTraceElement stackTraceElement : e.getStackTrace()) {
+            sb.append(stackTraceElement).append('\n');
+        }
+        sendError(sb.toString());
     }
 
     public static void sendInfo(String message) {
@@ -38,7 +54,7 @@ public class EmailCenter {
 
     public static void sendInfo(String message, String subject) {
         Email email = createEmail(message, subject, MessageType.INFO);
-        mailer.sendMail(email, true);
+        sendMessage(email);
     }
 
     private static Email createEmail(String message, String subject, MessageType type) {
