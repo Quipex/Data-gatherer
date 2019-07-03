@@ -13,7 +13,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.TimeoutException;
 
 @Log4j2
-final class RabbitMqConfig {
+final class RabbitMQConfig {
     private static final String CONNECTION_NAME = Config.getValue("queue.connection.name");
     private static Connection connection;
 
@@ -40,6 +40,7 @@ final class RabbitMqConfig {
 
     private static ConnectionFactory createFactory() throws ApplicationException {
         ConnectionFactory factory = new ConnectionFactory();
+        factory.setExceptionHandler(new EmailNotificationExceptionHandler());
         final String uri = Config.getValue("queue.uri");
         try {
             factory.setUri(uri);
@@ -48,6 +49,10 @@ final class RabbitMqConfig {
             log.error(message, e);
             throw new ApplicationException(e);
         }
+        //Recommended settings
+        factory.setRequestedHeartbeat(30);
+        factory.setConnectionTimeout(30000);
+
         return factory;
     }
 }

@@ -1,65 +1,127 @@
 package queue;
 
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.CancelCallback;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.DeliverCallback;
+import com.rabbitmq.client.*;
+import exceptions.ApplicationException;
 import exceptions.QueueException;
 import lombok.extern.log4j.Log4j2;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Optional;
 
 @Log4j2
-public class RabbitMQService {
+public class RabbitMQService implements QueueService {
 
+    private static final String EXCHANGE = "";
     private Channel rabbitChannel;
-    private String queueName;
 
-    public RabbitMQService(Channel rabbitChannel, String queueName) {
-        this.rabbitChannel = rabbitChannel;
+    /**
+     * Creates new channel by getting active connection
+     *
+     * @throws ApplicationException if connection error occurred
+     */
+    public RabbitMQService() throws ApplicationException {
+        Connection connection = RabbitMQConfig.getConnection();
         try {
-            changeQueue(queueName);
+            Optional<Channel> optional = connection.openChannel();
+            log.debug("Opening a channel...");
+            if (optional.isPresent()) {
+                rabbitChannel = optional.get();
+                log.debug("Opened channel '" + rabbitChannel.getChannelNumber() + "'");
+            } else {
+                throw new QueueException("Can't get a new channel");
+            }
         } catch (IOException e) {
+            log.error(e);
+            throw new QueueException("Can't open new channel", e);
+        }
+    }
+
+    private static byte[] toStream(String[][] message) {
+        byte[] stream;
+
+        try (ByteArrayOutputStream byteArrStream = new ByteArrayOutputStream();
+             ObjectOutputStream objectStream = new ObjectOutputStream(byteArrStream)) {
+            objectStream.writeObject(message);
+            stream = byteArrStream.toByteArray();
+        } catch (IOException e) {
+            log.error(e);
+            throw new QueueException(e);
+        }
+
+        return stream;
+    }
+
+    @Override
+    public void publish(String queueName, String[][] payload) throws QueueException {
+        publish(queueName, toStream(payload), null);
+        log.info("[" + queueName + "] Sent(" + payload.length + " objects)");
+        log.trace("Contents:\n" + Arrays.deepToString(payload));
+    }
+
+
+    @Override
+    public void publish(String queueName, String message) throws QueueException {
+        publish(queueName, message.getBytes(StandardCharsets.UTF_8), getUTF_8Properties());
+        log.info("[" + queueName + "] Sent: " + message);
+    }
+
+    private void publish(String queueName, byte[] content, AMQP.BasicProperties props) {
+        try {
+            rabbitChannel.basicPublish(EXCHANGE, queueName, props, content);
+        } catch (IOException e) {
+            log.error(e);
             throw new QueueException(e);
         }
     }
 
-    /**
-     * Declares a queue and changes internal queueName if no errors occured
-     *
-     * @param queueName to declare
-     * @return status of a queue declared
-     * @throws IOException if an error is encountered
-     */
-    public AMQP.Queue.DeclareOk changeQueue(String queueName) throws IOException {
-        AMQP.Queue.DeclareOk status = rabbitChannel.queueDeclare(queueName, true, false, false, null);
-        this.queueName = queueName;
-        log.debug("Changed queue to " + queueName);
-        return status;
+    private AMQP.BasicProperties getUTF_8Properties() {
+        return new AMQP.BasicProperties.Builder().contentType("text/plain").contentEncoding("UTF-8").build();
     }
 
-    /**
-     * @return name of the queue
-     */
-    public String getQueueName() {
-        return queueName;
+    @Override
+    public String consume(String queueName, boolean deleteMessage,
+                          DeliverCallback deliverCallback, CancelCallback cancelCallback) throws QueueException {
+        try {
+            return rabbitChannel.basicConsume(queueName, deleteMessage, deliverCallback, cancelCallback);
+        } catch (IOException e) {
+            log.error(e);
+            throw new QueueException(e);
+        }
     }
 
-    /**
-     * Publish a message
-     *
-     * @param content to be published
-     * @throws IOException if an error is encountered
-     */
-    public void publish(String content) throws IOException {
-        rabbitChannel.basicPublish("main", queueName, null, content.getBytes());
+    @Override
+    public long messageCount(String queueName) {
+        try {
+            return rabbitChannel.messageCount(queueName);
+        } catch (IOException e) {
+            log.error(e);
+            throw new QueueException(e);
+        }
     }
 
-    /**
-     * Consumes a message when arrives to a queue
-     */
-    public String consume(boolean deleteMessage,
-                               DeliverCallback deliverCallback, CancelCallback cancelCallback) throws IOException {
-        return rabbitChannel.basicConsume(queueName, deleteMessage, deliverCallback, cancelCallback);
+    @Override
+    public int purge(String queueName) {
+        AMQP.Queue.PurgeOk response;
+        try {
+            response = rabbitChannel.queuePurge(queueName);
+        } catch (IOException e) {
+            log.error(e);
+            throw new QueueException(e);
+        }
+        return response.getMessageCount();
+    }
+
+    @Override
+    public void declareQueue(String queueName) {
+        try {
+            rabbitChannel.queueDeclare(queueName, true, false, false, null);
+        } catch (IOException e) {
+            log.error(e);
+            throw new QueueException(e);
+        }
     }
 }
